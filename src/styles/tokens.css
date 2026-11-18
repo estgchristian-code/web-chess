@@ -6,41 +6,41 @@
   --font-sans:
     'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
-  /* Superfícies */
-  --color-canvas: #f6f5f2;
-  --color-surface: #ffffff;
-  --color-surface-muted: #efeee9;
-  --color-surface-sunken: #e8e6df;
+  /* Superfícies - Tema preto fosco */
+  --color-canvas: #121212;
+  --color-surface: #1c1c1c;
+  --color-surface-muted: #242424;
+  --color-surface-sunken: #2a2a2a;
 
   /* Texto */
-  --color-ink: #16211b;
-  --color-ink-soft: #4d544e;
-  --color-ink-muted: #7a817b;
+  --color-ink: #f5f5f5;
+  --color-ink-soft: #d4d4d4;
+  --color-ink-muted: #a3a3a3;
 
   /* Linhas */
-  --color-line: #e3e1d9;
-  --color-line-strong: #cfccc2;
+  --color-line: #333333;
+  --color-line-strong: #404040;
 
-  /* Marca */
-  --color-accent: #2f6a4f;
-  --color-accent-strong: #245540;
-  --color-accent-soft: #e6efe9;
+  /* Marca - Acento elegante (verde musgo suave) */
+  --color-accent: #4a9c6e;
+  --color-accent-strong: #3a7d56;
+  --color-accent-soft: #1a2e23;
 
-  /* Tabuleiro (reservado para a próxima etapa) */
-  --color-board-light: #e9e5d8;
-  --color-board-dark: #5f8163;
+  /* Tabuleiro */
+  --color-board-light: #2d2d2d;
+  --color-board-dark: #1a1a1a;
 
   /* Estados */
-  --color-warning: #8a5a1f;
-  --color-warning-soft: #f6eedd;
-  --color-danger: #9c3b2e;
-  --color-danger-soft: #f7e9e6;
+  --color-warning: #d4a843;
+  --color-warning-soft: #2d2510;
+  --color-danger: #c45c4a;
+  --color-danger-soft: #2d1510;
 
   /* Raios */
   --radius-control: 0.625rem;
   --radius-card: 1.125rem;
 
-  /* Elevação */
-  --shadow-card: 0 1px 2px rgb(22 33 27 / 0.04), 0 12px 32px -16px rgb(22 33 27 / 0.18);
-  --shadow-lift: 0 1px 2px rgb(22 33 27 / 0.05), 0 24px 48px -24px rgb(22 33 27 / 0.28);
+  /* Elevação - sombras adaptadas para fundo escuro */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px -16px rgba(0, 0, 0, 0.4);
+  --shadow-lift: 0 1px 2px rgba(0, 0, 0, 0.3), 0 24px 48px -24px rgba(0, 0, 0, 0.5);
 }

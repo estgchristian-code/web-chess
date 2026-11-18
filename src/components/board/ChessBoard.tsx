@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Chessboard } from 'react-chessboard';
 
@@ -32,11 +32,97 @@ export function ChessBoard() {
     return unsubscribe;
   }, [phase, engine]);
 
+  // Track drag state to avoid click-drag conflicts
+  const dragStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const pieceClickRef = useRef<Square | null>(null);
+
+  const handleMouseDown = useCallback(
+    ({ piece, square }: { piece: { pieceType: string } | null; square: string }, e: React.MouseEvent) => {
+      if (phase !== 'playing') return;
+      dragStartRef.current = { x: e.clientX, y: e.clientY, time: Date.now() };
+      // Track if we clicked on a piece (potential drag start)
+      if (piece) {
+        pieceClickRef.current = square as Square;
+      }
+    },
+    [phase]
+  );
+
+  const handleMouseUp = useCallback(
+    ({ square }: { piece: { pieceType: string } | null; square: string }, e: React.MouseEvent) => {
+      if (phase !== 'playing') return;
+
+      const start = dragStartRef.current;
+      dragStartRef.current = null;
+      pieceClickRef.current = null;
+
+      if (!start) return;
+
+      // Calculate movement and time
+      const dx = e.clientX - start.x;
+      const dy = e.clientY - start.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const elapsed = Date.now() - start.time;
+
+      // Consider it a click if minimal movement and short time
+      // dragActivationDistance is ~10px by default, we use 8px threshold
+      const isClick = distance < 8 && elapsed < 300;
+
+      if (isClick) {
+        const targetSquare = square as Square;
+        const turn = engine.turn();
+        const piece = engine.pieceAt(targetSquare);
+
+        // Click on same square: deselect
+        if (selectedSquare === targetSquare) {
+          setSelectedSquare(null);
+          return;
+        }
+
+        // Click on own piece: select it
+        if (piece && piece.color === turn) {
+          setSelectedSquare(targetSquare);
+          return;
+        }
+
+        // Click on destination square when piece is selected: execute move
+        if (selectedSquare) {
+          const legalMoves = engine.legalMoves(selectedSquare);
+          const matchedMove = legalMoves.find((m) => m.to === targetSquare);
+          if (matchedMove) {
+            // Execute the move
+            const result = playMove({
+              from: selectedSquare,
+              to: targetSquare,
+              promotion: matchedMove.promotion,
+            });
+
+            if (result.ok) {
+              if (result.move.flags.promotion && !promotionSquare) {
+                // Promotion needed - show dialog
+                setPendingMove({ from: selectedSquare, to: targetSquare });
+                setPromotionSquare(targetSquare);
+              } else {
+                // Normal move completed
+                setSelectedSquare(null);
+              }
+            }
+            return;
+          }
+        }
+
+        // Click on empty square or opponent piece without selection: deselect
+        setSelectedSquare(null);
+      }
+    },
+    [phase, engine, selectedSquare, playMove, promotionSquare]
+  );
+
   // Check for checkmate and update checkmate square
   const checkmateSquare = useMemo(() => {
     const status = engine.status();
     if (status.status.kind === 'finished' && status.status.result?.kind === 'checkmate') {
-      const turn = engine.turn(); // The side that IS IN CHECKMATE (just moved)
+      const turn = engine.turn();
       const opponentTurn = turn === 'w' ? 'b' : 'w';
       // Find the king that is checkmated
       const squares: Square[] = [
@@ -58,83 +144,6 @@ export function ChessBoard() {
     }
     return null;
   }, [engine]);
-
-  const handlePieceDrop = useCallback(
-    ({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }) => {
-      if (!targetSquare) return false;
-
-      const result = playMove({ from: sourceSquare as Square, to: targetSquare as Square });
-
-      if (!result.ok) {
-        if (result.reason === 'game-over') {
-          return false;
-        }
-        return false;
-      }
-
-      if (result.move.flags.promotion && !pendingMove) {
-        setPendingMove({ from: sourceSquare as Square, to: targetSquare as Square });
-        setPromotionSquare(targetSquare as Square);
-        return false;
-      }
-
-      setSelectedSquare(null);
-      return true;
-    },
-    [playMove, pendingMove]
-  );
-
-  const handleSquareClick = useCallback(
-    ({ square }: { piece: { pieceType: string } | null; square: string }) => {
-      if (phase !== 'playing') return;
-
-      const targetSquare = square as Square;
-      const turn = engine.turn();
-      const piece = engine.pieceAt(targetSquare);
-
-      // Click on same square: deselect
-      if (selectedSquare === targetSquare) {
-        setSelectedSquare(null);
-        return;
-      }
-
-      // Click on own piece: select it
-      if (piece && piece.color === turn) {
-        setSelectedSquare(targetSquare);
-        return;
-      }
-
-      // Click on destination square when piece is selected: execute move
-      if (selectedSquare) {
-        const legalMoves = engine.legalMoves(selectedSquare);
-        const matchedMove = legalMoves.find((m) => m.to === targetSquare);
-        if (matchedMove) {
-          // Execute the move
-          const result = playMove({
-            from: selectedSquare,
-            to: targetSquare,
-            promotion: matchedMove.promotion,
-          });
-
-          if (result.ok) {
-            if (result.move.flags.promotion && !promotionSquare) {
-              // Promotion needed - show dialog
-              setPendingMove({ from: selectedSquare, to: targetSquare });
-              setPromotionSquare(targetSquare);
-            } else {
-              // Normal move completed
-              setSelectedSquare(null);
-            }
-          }
-          return;
-        }
-      }
-
-      // Click on empty square or opponent piece without selection: deselect
-      setSelectedSquare(null);
-    },
-    [engine, phase, selectedSquare, playMove, promotionSquare]
-  );
 
   // Compute legal move targets for selected piece
   const legalMoveTargets = useMemo(() => {
@@ -230,6 +239,31 @@ export function ChessBoard() {
     return styles;
   }, [legalMoveTargets, engine, lastMove, checkedKingSquare, promotionSquare, checkmateSquare]);
 
+  const handlePieceDrop = useCallback(
+    ({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }) => {
+      if (!targetSquare) return false;
+
+      const result = playMove({ from: sourceSquare as Square, to: targetSquare as Square });
+
+      if (!result.ok) {
+        if (result.reason === 'game-over') {
+          return false;
+        }
+        return false;
+      }
+
+      if (result.move.flags.promotion && !pendingMove) {
+        setPendingMove({ from: sourceSquare as Square, to: targetSquare as Square });
+        setPromotionSquare(targetSquare as Square);
+        return false;
+      }
+
+      setSelectedSquare(null);
+      return true;
+    },
+    [playMove, pendingMove]
+  );
+
   const handlePromotion = useCallback(
     (piece: 'q' | 'r' | 'b' | 'n') => {
       if (pendingMove && promotionSquare) {
@@ -262,8 +296,10 @@ export function ChessBoard() {
             position: engine.fen().split(' ')[0],
             boardOrientation: orientation,
             allowDragging: phase === 'playing',
+            dragActivationDistance: 10,
             onPieceDrop: handlePieceDrop,
-            onSquareClick: handleSquareClick,
+            onSquareMouseDown: handleMouseDown,
+            onSquareMouseUp: handleMouseUp,
             squareStyles,
           }}
         />
