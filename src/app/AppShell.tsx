@@ -22,8 +22,6 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <footer className="border-t border-line">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-1.5 px-5 py-6 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p>Sem contas, sem servidores. A partida fica neste dispositivo.</p>
-          <p>Tabuleiro e regras na próxima etapa.</p>
         </div>
       </footer>
     </>

@@ -314,8 +314,6 @@ export function GameScreen() {
       {/* Footer */}
       <footer className="border-t border-line hidden lg:block">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-1.5 px-5 py-4 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p>Sem contas, sem servidores. A partida fica neste dispositivo.</p>
-          <p>Partida salva automaticamente no navegador.</p>
         </div>
       </footer>
     </div>

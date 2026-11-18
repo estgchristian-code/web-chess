@@ -55,7 +55,7 @@ export function HomeScreen() {
           </h1>
 
           <p className="mt-6 max-w-md text-base leading-relaxed text-ink-soft">
-            Xadrez completo para jogar no mesmo dispositivo. Sem contas, sem servidores — apenas
+            Xadrez completo para jogar no mesmo dispositivo — apenas
             você, o adversário e a partida.
           </p>
 
@@ -75,8 +75,6 @@ export function HomeScreen() {
           <p className="mt-3 text-xs text-ink-muted">O tabuleiro será habilitado em breve.</p>
 
           <ul className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-ink-muted">
-            <li>Sem contas</li>
-            <li aria-hidden="true" className="size-1 rounded-full bg-line-strong" />
             <li>Sem instalação</li>
             <li aria-hidden="true" className="size-1 rounded-full bg-line-strong" />
             <li>Funciona offline</li>
