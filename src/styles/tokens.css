@@ -1,0 +1,46 @@
+/*
+ * Design tokens — fonte única de verdade para cores, tipografia e superfícies.
+ * Os tokens declarados em `@theme` geram utilitários Tailwind (bg-surface, text-ink, ...).
+ */
+@theme {
+  --font-sans:
+    'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* Superfícies */
+  --color-canvas: #f6f5f2;
+  --color-surface: #ffffff;
+  --color-surface-muted: #efeee9;
+  --color-surface-sunken: #e8e6df;
+
+  /* Texto */
+  --color-ink: #16211b;
+  --color-ink-soft: #4d544e;
+  --color-ink-muted: #7a817b;
+
+  /* Linhas */
+  --color-line: #e3e1d9;
+  --color-line-strong: #cfccc2;
+
+  /* Marca */
+  --color-accent: #2f6a4f;
+  --color-accent-strong: #245540;
+  --color-accent-soft: #e6efe9;
+
+  /* Tabuleiro (reservado para a próxima etapa) */
+  --color-board-light: #e9e5d8;
+  --color-board-dark: #5f8163;
+
+  /* Estados */
+  --color-warning: #8a5a1f;
+  --color-warning-soft: #f6eedd;
+  --color-danger: #9c3b2e;
+  --color-danger-soft: #f7e9e6;
+
+  /* Raios */
+  --radius-control: 0.625rem;
+  --radius-card: 1.125rem;
+
+  /* Elevação */
+  --shadow-card: 0 1px 2px rgb(22 33 27 / 0.04), 0 12px 32px -16px rgb(22 33 27 / 0.18);
+  --shadow-lift: 0 1px 2px rgb(22 33 27 / 0.05), 0 24px 48px -24px rgb(22 33 27 / 0.28);
+}
