@@ -94,8 +94,8 @@ export function HomeScreen() {
             </div>
 
             <div className="space-y-1 px-3 py-3">
-              <PlayerCard side="black" name="Negras" detail="Jogador 2" time="10:00" />
-              <PlayerCard side="white" name="Brancas" detail="Jogador 1" time="10:00" active />
+              <PlayerCard side="black" name="Negras" time="10:00" />
+              <PlayerCard side="white" name="Brancas" time="10:00" active />
             </div>
 
             <div className="border-t border-line px-5 py-4">

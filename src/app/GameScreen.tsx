@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ChessBoard } from '@/components/board/ChessBoard';
-import { PlayerCard } from '@/components/panels/PlayerCard';
-import { IconPause, IconPlay, IconRotateCcw, IconX, IconFlag } from '@/components/ui/icons';
-import { groupMoves } from '@/domain/chess/notation';
+import { PlayerCardWithPhase } from '@/components/panels/PlayerCard';
+import { MoveHistory } from '@/components/panels/MoveHistory';
+import { GameControls } from '@/components/panels/GameControls';
+import { IconMenu, IconChevronLeft } from '@/components/ui/icons';
 import type { ClaimableDrawReason } from '@/domain/chess/types';
+import type { ClockPreset } from '@/domain/clock/types';
+import type { PlayerResult } from '@/components/panels/PlayerCard';
+import { cn } from '@/lib/cn';
 import { useGameStore } from '@/store/game';
 
 function formatMs(ms: number): string {
@@ -37,6 +40,15 @@ export function GameScreen() {
   const [whiteTime, setWhiteTime] = useState(clock.remaining('white'));
   const [blackTime, setBlackTime] = useState(clock.remaining('black'));
   const [activeSide, setActiveSide] = useState<'white' | 'black' | null>(clock.getActiveSide());
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -48,12 +60,16 @@ export function GameScreen() {
     return () => clearInterval(interval);
   }, [clock]);
 
-  const movePairs = groupMoves(history);
-
   const engine = useGameStore.getState().engine;
   const isWhiteTurn = status.status.kind === 'playing' && engine.turn() === 'w';
 
   const handleStart = () => startGame(preset);
+  const handleNewGame = () => restart();
+  const handlePresetChange = (_: ClockPreset) => {
+    // Reset will use new preset
+    restart();
+    // Note: preset change only takes effect on next start
+  };
 
   const handleResign = () => {
     if (confirm('Tem certeza que deseja desistir?')) {
@@ -76,30 +92,51 @@ export function GameScreen() {
     }
   };
 
+  // Compute player results for badges
+  const getPlayerResult = (side: 'white' | 'black'): PlayerResult => {
+    if (!gameResult || phase !== 'finished') return null;
+    if (gameResult.kind === 'draw') return 'draw';
+    const winner = gameResult.winner;
+    if (side === 'white') return winner === 'w' ? 'win' : 'loss';
+    return winner === 'b' ? 'win' : 'loss';
+  };
+
   return (
-    <div className="flex flex-col h-full w-full">
-      <header className="sticky top-0 z-10 border-b border-line/80 bg-canvas/85 backdrop-blur-sm">
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
-          <div className="flex items-center gap-2.5">
-            <svg
-              className="size-6 text-accent"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.6}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M12 3.5 5 6.2v5.1c0 4.2 2.9 7.6 7 9.2 4.1-1.6 7-5 7-9.2V6.2L12 3.5Z" />
-              <path d="m9.2 11.6 2 2.1 3.6-4" />
-            </svg>
-            <span className="text-[0.9375rem] font-semibold tracking-tight text-ink">Xadrez</span>
-            <span aria-hidden="true" className="hidden h-4 w-px bg-line-strong sm:block" />
-            <span className="hidden text-xs font-medium text-ink-muted sm:block">jogo local</span>
+    <div className="flex flex-col h-full w-full bg-canvas">
+      {/* Top header bar */}
+      <header className="sticky top-0 z-20 border-b border-line/80 bg-canvas/95 backdrop-blur-sm">
+        <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+          {/* Left: Menu + Title */}
+          <div className="flex items-center gap-3">
+            {isMobile && (
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="size-9 rounded-lg bg-surface border border-line flex items-center justify-center text-ink hover:bg-surface-muted transition-colors"
+                aria-label="Menu"
+              >
+                {sidebarOpen ? <IconChevronLeft className="size-5" /> : <IconMenu className="size-5" />}
+              </button>
+            )}
+            <div className="flex items-center gap-2">
+              <svg
+                className="size-5 text-accent"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.6}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 3.5 5 6.2v5.1c0 4.2 2.9 7.6 7 9.2 4.1-1.6 7-5 7-9.2V6.2L12 3.5Z" />
+                <path d="m9.2 11.6 2 2.1 3.6-4" />
+              </svg>
+              <span className="text-base font-semibold tracking-tight text-ink">Xadrez</span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Center: Status badges */}
+          <div className="flex items-center gap-2 flex-wrap justify-center">
             {phase === 'finished' && gameResult && (
               <Badge tone="accent" className="text-xs">
                 {gameResult.kind === 'checkmate'
@@ -112,7 +149,7 @@ export function GameScreen() {
               </Badge>
             )}
             {phase === 'playing' && status.status.kind === 'playing' && status.details.inCheck && (
-              <Badge tone="accent" className="text-xs">
+              <Badge tone="accent" className="text-xs animate-pulse">
                 Xeque!
               </Badge>
             )}
@@ -127,132 +164,80 @@ export function GameScreen() {
               </Badge>
             )}
           </div>
+
+          {/* Right: Version */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-ink-muted font-mono hidden sm:block">v0.1</span>
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 overflow-auto">
-        <div className="mx-auto grid w-full max-w-6xl gap-6 px-5 py-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start lg:gap-8 lg:py-8">
-          <section className="flex flex-col items-center gap-4">
-            <ChessBoard />
+      <div className="flex flex-1 overflow-hidden">
+        {/* Mobile sidebar overlay */}
+        {isMobile && sidebarOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
+          />
+        )}
 
-            <div className="flex items-center justify-center gap-3 w-full max-w-[480px]">
-              {phase === 'waiting' && (
-                <Button size="lg" onClick={handleStart}>
-                  Nova partida
-                </Button>
-              )}
-
-              {phase === 'playing' && (
-                <>
-                  <Button variant="secondary" size="md" onClick={pause}>
-                    <IconPause className="size-4" />
-                    Pausar
-                  </Button>
-                  <Button variant="ghost" size="md" onClick={handleResign}>
-                    <IconX className="size-4" />
-                    Desistir
-                  </Button>
-                </>
-              )}
-
-              {phase === 'paused' && (
-                <>
-                  <Button size="md" onClick={resume}>
-                    <IconPlay className="size-4" />
-                    Retomar
-                  </Button>
-                  <Button variant="ghost" size="md" onClick={handleResign}>
-                    <IconX className="size-4" />
-                    Desistir
-                  </Button>
-                </>
-              )}
-
-              {phase === 'finished' && (
-                <Button variant="secondary" size="md" onClick={restart}>
-                  <IconRotateCcw className="size-4" />
-                  Reiniciar
-                </Button>
-              )}
-
-              <Button variant="ghost" size="md" onClick={restart}>
-                <IconRotateCcw className="size-4" />
-                Nova partida
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-center gap-4 text-xs text-ink-muted w-full max-w-[480px]">
-              <span>Preset: {preset}</span>
-              {status.claims.length > 0 && phase !== 'finished' && (
-                <Button variant="ghost" size="sm" onClick={handleDrawClaim}>
-                  <IconFlag className="size-3.5" />
-                  Reivindicar empate
-                </Button>
-              )}
-            </div>
-          </section>
-
-          <aside className="flex flex-col gap-4 w-full lg:w-[400px]">
-            <div className="space-y-2">
-              <PlayerCard
-                side="black"
-                name="Negras"
-                detail="Jogador 2"
-                time={formatMs(blackTime)}
-                active={activeSide === 'black' && phase === 'playing'}
-              />
-              <PlayerCard
-                side="white"
-                name="Brancas"
-                detail="Jogador 1"
-                time={formatMs(whiteTime)}
-                active={activeSide === 'white' && phase === 'playing'}
-              />
-            </div>
-
-            <Card className="flex-1 min-h-[200px] overflow-hidden">
-              <div className="border-b border-line px-4 py-3">
-                <p className="text-[0.6875rem] font-medium tracking-wider text-ink-muted uppercase">
-                  Histórico
-                </p>
+        {/* Sidebar (right panel) - Mobile: slide-over, Desktop: fixed */}
+        <aside
+          className={cn(
+            'fixed inset-y-0 right-0 z-50 w-80 bg-canvas border-l border-line flex flex-col transition-transform duration-300 ease-out lg:relative lg:translate-x-0 lg:z-auto',
+            isMobile && !sidebarOpen && 'translate-x-full',
+          )}
+          aria-label="Painel lateral"
+        >
+          <div className="flex flex-col h-full">
+            {/* Sidebar header - mobile close button */}
+            {isMobile && (
+              <div className="flex items-center justify-between p-4 border-b border-line">
+                <h3 className="text-sm font-semibold text-ink">Painel</h3>
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="size-8 rounded-lg bg-surface border border-line flex items-center justify-center text-ink hover:bg-surface-muted transition-colors"
+                  aria-label="Fechar painel"
+                >
+                  <IconChevronLeft className="size-5" />
+                </button>
               </div>
-              <div className="p-4 overflow-y-auto max-h-[300px]">
-                {movePairs.length > 0 ? (
-                  <ol className="space-y-1.5">
-                    {movePairs.map((pair, index) => (
-                      <li
-                        key={index}
-                        className="grid grid-cols-[1.75rem_1fr_1fr] items-baseline text-sm"
-                      >
-                        <span className="text-xs text-ink-muted tabular-nums">{index + 1}.</span>
-                        <span className="font-medium text-ink">{pair.white?.san ?? ''}</span>
-                        <span className="font-medium text-ink">{pair.black?.san ?? ''}</span>
-                      </li>
-                    ))}
-                  </ol>
-                ) : (
-                  <p className="text-center text-sm text-ink-muted py-8">Nenhum lance ainda</p>
-                )}
-              </div>
-            </Card>
+            )}
 
-            <Card>
-              <div className="p-4 space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[0.6875rem] font-medium tracking-wider text-ink-muted uppercase">
-                      Configuração
-                    </p>
-                    <p className="mt-0.5 text-xs text-ink-muted">Preset do relógio</p>
-                  </div>
-                  <Badge tone="neutral">{preset}</Badge>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {/* Move History */}
+              <Card className="flex-1 min-h-0">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-ink-muted uppercase tracking-wider">Histórico</h3>
+                  <Badge tone="neutral" className="text-xs">
+                    {history.length} lances
+                  </Badge>
                 </div>
+                <MoveHistory moves={history} lastMoveIndex={history.length - 1} />
+              </Card>
 
-                <div className="border-t border-line pt-4 space-y-2">
-                  <p className="text-[0.6875rem] font-medium tracking-wider text-ink-muted uppercase">
-                    Status
-                  </p>
-                  <dl className="space-y-1.5 text-sm">
+              {/* Game Controls */}
+              <Card>
+                <GameControls
+                  phase={phase}
+                  preset={preset}
+                  onStart={handleStart}
+                  onPause={pause}
+                  onResume={resume}
+                  onRestart={restart}
+                  onResign={handleResign}
+                  onDraw={handleDrawClaim}
+                  onNewGame={handleNewGame}
+                  onPresetChange={handlePresetChange}
+                />
+              </Card>
+
+              {/* Game Status */}
+              <Card>
+                <div className="p-4 space-y-3">
+                  <h3 className="text-sm font-semibold text-ink-muted uppercase tracking-wider">Status</h3>
+                  <dl className="space-y-2 text-sm">
                     <div className="flex justify-between gap-4">
                       <dt className="text-ink-muted">Fase</dt>
                       <dd className="font-medium text-ink capitalize">{phase}</dd>
@@ -276,19 +261,59 @@ export function GameScreen() {
                       <dd className="font-medium text-ink tabular-nums">{status.details.repetitionCount}</dd>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <dt className="text-ink-muted">Meio-lances sem captura/peão</dt>
+                      <dt className="text-ink-muted">Meio-lances</dt>
                       <dd className="font-medium text-ink tabular-nums">{status.details.halfmoveClock}</dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-ink-muted">Preset</dt>
+                      <dd className="font-medium text-ink font-mono">{preset}</dd>
                     </div>
                   </dl>
                 </div>
-              </div>
-            </Card>
-          </aside>
-        </div>
-      </main>
+              </Card>
+            </div>
+          </div>
+        </aside>
 
-      <footer className="border-t border-line">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-1.5 px-5 py-6 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        {/* Main content area */}
+        <main className="flex-1 flex flex-col min-w-0 lg:mr-80">
+          {/* Board area with player cards top/bottom */}
+          <div className="flex flex-col flex-1 items-center justify-center p-4 gap-3 min-h-0">
+            {/* Top player (Black - plays from top) */}
+            <PlayerCardWithPhase
+              side="black"
+              name="Negras"
+              time={formatMs(blackTime)}
+              active={activeSide === 'black' && phase === 'playing'}
+              result={getPlayerResult('black')}
+              onResign={handleResign}
+              onDraw={handleDrawClaim}
+              phase={phase}
+            />
+
+            {/* Board */}
+            <div className="relative flex-shrink-0 w-full max-w-[600px]">
+              <ChessBoard />
+            </div>
+
+            {/* Bottom player (White - plays from bottom) */}
+            <PlayerCardWithPhase
+              side="white"
+              name="Brancas"
+              time={formatMs(whiteTime)}
+              active={activeSide === 'white' && phase === 'playing'}
+              result={getPlayerResult('white')}
+              onResign={handleResign}
+              onDraw={handleDrawClaim}
+              phase={phase}
+            />
+          </div>
+        </main>
+      </div>
+
+      {/* Footer */}
+      <footer className="border-t border-line hidden lg:block">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-1.5 px-5 py-4 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <p>Sem contas, sem servidores. A partida fica neste dispositivo.</p>
           <p>Partida salva automaticamente no navegador.</p>
         </div>

@@ -4,6 +4,7 @@ import { Chessboard } from 'react-chessboard';
 
 import { useGameStore } from '@/store/game';
 import type { Square } from '@/domain/chess/types';
+import { IconX } from '@/components/ui/icons';
 
 export function ChessBoard() {
   const { engine, phase, playMove, undoMove } = useGameStore();
@@ -30,6 +31,33 @@ export function ChessBoard() {
     });
     return unsubscribe;
   }, [phase, engine]);
+
+  // Check for checkmate and update checkmate square
+  const checkmateSquare = useMemo(() => {
+    const status = engine.status();
+    if (status.status.kind === 'finished' && status.status.result?.kind === 'checkmate') {
+      const turn = engine.turn(); // The side that IS IN CHECKMATE (just moved)
+      const opponentTurn = turn === 'w' ? 'b' : 'w';
+      // Find the king that is checkmated
+      const squares: Square[] = [
+        'a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1',
+        'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2',
+        'a3', 'b3', 'c3', 'd3', 'e3', 'f3', 'g3', 'h3',
+        'a4', 'b4', 'c4', 'd4', 'e4', 'f4', 'g4', 'h4',
+        'a5', 'b5', 'c5', 'd5', 'e5', 'f5', 'g5', 'h5',
+        'a6', 'b6', 'c6', 'd6', 'e6', 'f6', 'g6', 'h6',
+        'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7',
+        'a8', 'b8', 'c8', 'd8', 'e8', 'f8', 'g8', 'h8',
+      ];
+      for (const sq of squares) {
+        const piece = engine.pieceAt(sq);
+        if (piece && piece.type === 'k' && piece.color === opponentTurn) {
+          return sq;
+        }
+      }
+    }
+    return null;
+  }, [engine]);
 
   const handlePieceDrop = useCallback(
     ({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }) => {
@@ -76,21 +104,36 @@ export function ChessBoard() {
         return;
       }
 
-      // Click on destination square when piece is selected: try to move
+      // Click on destination square when piece is selected: execute move
       if (selectedSquare) {
         const legalMoves = engine.legalMoves(selectedSquare);
-        const isLegal = legalMoves.some((m) => m.to === targetSquare);
-        if (isLegal) {
-          // The actual move will be handled by handlePieceDrop via drag-drop
-          // For click-click move, we'd need to call playMove directly
-          // For now, rely on drag-drop; selection just shows hints
+        const matchedMove = legalMoves.find((m) => m.to === targetSquare);
+        if (matchedMove) {
+          // Execute the move
+          const result = playMove({
+            from: selectedSquare,
+            to: targetSquare,
+            promotion: matchedMove.promotion,
+          });
+
+          if (result.ok) {
+            if (result.move.flags.promotion && !promotionSquare) {
+              // Promotion needed - show dialog
+              setPendingMove({ from: selectedSquare, to: targetSquare });
+              setPromotionSquare(targetSquare);
+            } else {
+              // Normal move completed
+              setSelectedSquare(null);
+            }
+          }
+          return;
         }
       }
 
       // Click on empty square or opponent piece without selection: deselect
       setSelectedSquare(null);
     },
-    [engine, phase, selectedSquare]
+    [engine, phase, selectedSquare, playMove, promotionSquare]
   );
 
   // Compute legal move targets for selected piece
@@ -144,6 +187,17 @@ export function ChessBoard() {
       styles[checkedKingSquare] = {
         ...styles[checkedKingSquare],
         backgroundColor: 'rgba(255, 0, 0, 0.3)',
+        boxShadow: 'inset 0 0 0 2px rgba(255, 0, 0, 0.8)',
+      };
+    }
+
+    // Checkmate highlight (pulsing red)
+    if (checkmateSquare) {
+      styles[checkmateSquare] = {
+        ...styles[checkmateSquare],
+        backgroundColor: 'rgba(255, 0, 0, 0.4)',
+        boxShadow: 'inset 0 0 0 3px rgba(255, 0, 0, 0.9), 0 0 10px rgba(255, 0, 0, 0.5)',
+        animation: 'pulse-checkmate 1s ease-in-out infinite',
       };
     }
 
@@ -174,7 +228,7 @@ export function ChessBoard() {
     }
 
     return styles;
-  }, [legalMoveTargets, engine, lastMove, checkedKingSquare, promotionSquare]);
+  }, [legalMoveTargets, engine, lastMove, checkedKingSquare, promotionSquare, checkmateSquare]);
 
   const handlePromotion = useCallback(
     (piece: 'q' | 'r' | 'b' | 'n') => {
@@ -255,33 +309,47 @@ function PromotionDialog({
 
   return (
     <div
-      className="fixed z-50 flex flex-col gap-1 rounded-lg border border-line bg-surface p-2 shadow-lg"
-      style={{
-        left: '50%',
-        top: '50%',
-        transform: 'translate(-50%, -50%)',
-      }}
+      className="fixed z-50 inset-0 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
       role="dialog"
       aria-label="Escolha a peça para promoção"
+      onClick={onCancel}
     >
-      {pieceOptions.map(({ piece, label, symbol }) => (
-        <button
-          key={piece}
-          onClick={() => onSelect(piece)}
-          className="flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-ink hover:bg-surface-muted rounded-control transition-colors"
-        >
-          <span className="text-2xl" aria-hidden="true">
-            {symbol}
-          </span>
-          {label}
-        </button>
-      ))}
-      <button
-        onClick={onCancel}
-        className="mt-1 px-3 py-1.5 text-sm font-medium text-ink-muted hover:text-ink hover:bg-surface-muted rounded-control transition-colors"
+      <div
+        className="relative w-full max-w-sm bg-surface rounded-xl border border-line p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
       >
-        Cancelar
-      </button>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-ink">Promover peão</h3>
+          <button
+            onClick={onCancel}
+            className="size-8 rounded-lg text-ink-muted hover:text-ink hover:bg-surface-muted transition-colors flex items-center justify-center"
+            aria-label="Cancelar"
+          >
+            <IconX className="size-5" />
+          </button>
+        </div>
+        <p className="text-xs text-ink-muted mb-3">Escolha a peça para promoção</p>
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          {pieceOptions.map(({ piece, label, symbol }) => (
+            <button
+              key={piece}
+              onClick={() => onSelect(piece)}
+              className="flex flex-col items-center gap-1.5 px-3 py-3 text-left text-sm font-medium text-ink hover:bg-surface-muted rounded-xl border border-line transition-all duration-150 hover:border-accent/30 hover:shadow-md"
+            >
+              <span className="text-3xl" aria-hidden="true">
+                {symbol}
+              </span>
+              <span className="text-xs font-medium text-ink-muted">{label}</span>
+            </button>
+          ))}
+        <button
+          onClick={onCancel}
+          className="w-full px-3 py-2 text-sm font-medium text-ink-muted hover:text-ink hover:bg-surface-muted rounded-xl border border-line transition-colors"
+        >
+          Cancelar
+        </button>
+      </div>
     </div>
+  </div>
   );
 }

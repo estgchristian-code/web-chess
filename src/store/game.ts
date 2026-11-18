@@ -14,7 +14,7 @@ import { ChessClock } from '@/domain/clock/clock';
 import { DEFAULT_PRESET, type ClockPreset, type ClockSnapshot, type ClockSide } from '@/domain/clock/types';
 import { clearGame, loadGame, saveGame, type PersistedGame } from '@/persistence/game';
 
-type GamePhase = 'waiting' | 'playing' | 'paused' | 'finished';
+export type GamePhase = 'waiting' | 'playing' | 'paused' | 'finished';
 
 interface GameState {
   engine: ChessEngine;

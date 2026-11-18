@@ -106,3 +106,30 @@ export function IconFlag({ className, ...props }: IconProps) {
     </IconBase>
   );
 }
+
+export function IconMenu({ className, ...props }: IconProps) {
+  return (
+    <IconBase className={className} {...props}>
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="4" y1="18" x2="20" y2="18" />
+    </IconBase>
+  );
+}
+
+export function IconChevronLeft({ className, ...props }: IconProps) {
+  return (
+    <IconBase className={className} {...props}>
+      <polyline points="15 18 9 12 15 6" />
+    </IconBase>
+  );
+}
+
+export function IconRefreshCw({ className, ...props }: IconProps) {
+  return (
+    <IconBase className={className} {...props}>
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+      <path d="M3 3v5h5" />
+    </IconBase>
+  );
+}
