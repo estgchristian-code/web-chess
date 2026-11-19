@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { ChessBoard } from '@/components/board/ChessBoard';
 import { AppearancePanel } from '@/components/panels/AppearancePanel';
 import { PlayerCardWithPhase } from '@/components/panels/PlayerCard';
+import { ScoreboardPanel } from '@/components/panels/ScoreboardPanel';
 import { MoveHistory } from '@/components/panels/MoveHistory';
 import { GameControls } from '@/components/panels/GameControls';
 import { IconMenu, IconChevronLeft, IconX } from '@/components/ui/icons';
@@ -146,7 +147,7 @@ export function GameScreen() {
         {/* Sidebar (right panel) - Mobile: slide-over, Desktop: fixed */}
         <aside
           className={cn(
-            'fixed inset-y-0 right-0 z-50 flex w-80 flex-col border-l border-line/80 bg-canvas shadow-[0_0_60px_-20px_rgba(0,0,0,0.8)] transition-transform duration-300 ease-out lg:relative lg:z-auto lg:translate-x-0 lg:shadow-none',
+            'fixed inset-y-0 right-0 z-50 flex w-80 flex-col border-l border-line/80 bg-canvas shadow-[0_0_60px_-20px_rgba(0,0,0,0.8)] transition-transform duration-300 ease-out lg:relative lg:z-auto lg:translate-x-0 lg:shadow-none lg:h-full',
             isMobile && !sidebarOpen && 'translate-x-full',
           )}
           aria-label="Painel lateral"
@@ -248,6 +249,9 @@ export function GameScreen() {
                   </div>
                 </dl>
               </Card>
+
+              {/* Scoreboard */}
+              <ScoreboardPanel />
             </div>
           </div>
         </aside>
