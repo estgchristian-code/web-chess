@@ -119,7 +119,7 @@ export function GameScreen() {
       {/* Mobile menu bar */}
       {isMobile && (
         <header className="sticky top-0 z-20 border-b border-line/70 bg-canvas/90 backdrop-blur-xl">
-          <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-4 px-4 sm:px-6">
+          <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="flex size-9 items-center justify-center rounded-control border border-line/80 bg-surface text-ink shadow-sm transition-colors hover:bg-surface-muted focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
@@ -144,11 +144,11 @@ export function GameScreen() {
           />
         )}
 
-        {/* Sidebar (right panel) - Mobile: slide-over, Desktop: fixed */}
+        {/* Sidebar (left panel) - Mobile: slide-over, Desktop: fixed */}
         <aside
           className={cn(
-            'fixed inset-y-0 right-0 z-50 flex w-80 flex-col border-l border-line/80 bg-canvas shadow-[0_0_60px_-20px_rgba(0,0,0,0.8)] transition-transform duration-300 ease-out lg:relative lg:z-auto lg:translate-x-0 lg:shadow-none lg:h-full',
-            isMobile && !sidebarOpen && 'translate-x-full',
+            'fixed inset-y-0 left-0 z-50 flex w-80 flex-col border-r border-line/80 bg-canvas shadow-[0_0_60px_-20px_rgba(0,0,0,0.8)] transition-transform duration-300 ease-out lg:fixed lg:inset-y-0 lg:left-0 lg:z-auto lg:shadow-none',
+            isMobile && !sidebarOpen && '-translate-x-full',
           )}
           aria-label="Painel lateral"
         >
@@ -249,47 +249,54 @@ export function GameScreen() {
                   </div>
                 </dl>
               </Card>
-
-              {/* Scoreboard */}
-              <ScoreboardPanel />
             </div>
           </div>
         </aside>
 
-        {/* Main content area */}
-        <main className="flex min-w-0 flex-1 flex-col">
-          {/* Board area with player cards top/bottom */}
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3.5 p-4 sm:gap-4 sm:p-6">
-            {/* Top player (Black - plays from top) */}
-            <PlayerCardWithPhase
-              side="black"
-              name="Negras"
-              time={formatMs(blackTime)}
-              active={activeSide === 'black' && phase === 'playing'}
-              result={getPlayerResult('black')}
-              onResign={handleResign}
-              onDraw={handleDrawClaim}
-              phase={phase}
-            />
+        {/* Main content area + right scoreboard */}
+        <div className="flex flex-1 flex-col lg:flex-row">
+          {/* Main content area */}
+          <main className="flex min-w-0 flex-1 flex-col">
+            {/* Board area with player cards top/bottom */}
+            <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3.5 p-4 sm:gap-4 sm:p-6">
+              {/* Top player (Black - plays from top) */}
+              <PlayerCardWithPhase
+                side="black"
+                name="Negras"
+                time={formatMs(blackTime)}
+                active={activeSide === 'black' && phase === 'playing'}
+                result={getPlayerResult('black')}
+                onResign={handleResign}
+                onDraw={handleDrawClaim}
+                phase={phase}
+              />
 
-            {/* Board */}
-            <div className="relative flex-shrink-0 w-full max-w-[600px]">
-              <ChessBoard />
+              {/* Board */}
+              <div className="relative flex-shrink-0 w-full max-w-[600px]">
+                <ChessBoard />
+              </div>
+
+              {/* Bottom player (White - plays from bottom) */}
+              <PlayerCardWithPhase
+                side="white"
+                name="Brancas"
+                time={formatMs(whiteTime)}
+                active={activeSide === 'white' && phase === 'playing'}
+                result={getPlayerResult('white')}
+                onResign={handleResign}
+                onDraw={handleDrawClaim}
+                phase={phase}
+              />
             </div>
+          </main>
 
-            {/* Bottom player (White - plays from bottom) */}
-            <PlayerCardWithPhase
-              side="white"
-              name="Brancas"
-              time={formatMs(whiteTime)}
-              active={activeSide === 'white' && phase === 'playing'}
-              result={getPlayerResult('white')}
-              onResign={handleResign}
-              onDraw={handleDrawClaim}
-              phase={phase}
-            />
-          </div>
-        </main>
+          {/* Scoreboard (right panel) - Desktop only, hidden on mobile */}
+          <aside className="hidden lg:fixed lg:inset-y-0 lg:right-0 lg:z-auto lg:flex lg:flex-shrink-0 w-80 border-l border-line/80 bg-canvas p-4">
+            <div className="flex h-full flex-col justify-center">
+              <ScoreboardPanel />
+            </div>
+          </aside>
+        </div>
       </div>
 
       {/* Resignation Dialog */}
