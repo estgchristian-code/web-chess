@@ -37,6 +37,7 @@ interface GameState {
   claimDraw: (reason: ClaimableDrawReason) => void;
   save: () => void;
   load: () => boolean;
+  setPreset: (preset: ClockPreset) => void;
 }
 
 export const useGameStore = create<GameState>((set, get) => {
@@ -209,6 +210,11 @@ export const useGameStore = create<GameState>((set, get) => {
         clockSnapshots: [],
       });
       clearGame();
+    },
+
+    setPreset: (nextPreset: ClockPreset): void => {
+      set({ preset: nextPreset });
+      get().save();
     },
 
     resign: (): void => {

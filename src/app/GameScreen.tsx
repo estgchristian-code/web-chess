@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ChessBoard } from '@/components/board/ChessBoard';
 import { PlayerCardWithPhase } from '@/components/panels/PlayerCard';
 import { MoveHistory } from '@/components/panels/MoveHistory';
 import { GameControls } from '@/components/panels/GameControls';
-import { IconMenu, IconChevronLeft } from '@/components/ui/icons';
+import { IconMenu, IconChevronLeft, IconX } from '@/components/ui/icons';
 import type { ClaimableDrawReason } from '@/domain/chess/types';
 import type { ClockPreset } from '@/domain/clock/types';
 import type { PlayerResult } from '@/components/panels/PlayerCard';
@@ -35,6 +36,7 @@ export function GameScreen() {
     restart,
     resign,
     claimDraw,
+    setPreset,
   } = useGameStore();
 
   const [whiteTime, setWhiteTime] = useState(clock.remaining('white'));
@@ -42,6 +44,8 @@ export function GameScreen() {
   const [activeSide, setActiveSide] = useState<'white' | 'black' | null>(clock.getActiveSide());
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [resignDialogOpen, setResignDialogOpen] = useState(false);
+  const [drawDialogOpen, setDrawDialogOpen] = useState<ClaimableDrawReason | null>(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -65,16 +69,18 @@ export function GameScreen() {
 
   const handleStart = () => startGame(preset);
   const handleNewGame = () => restart();
-  const handlePresetChange = (_: ClockPreset) => {
-    // Reset will use new preset
+  const handlePresetChange = (nextPreset: ClockPreset) => {
+    setPreset(nextPreset);
     restart();
-    // Note: preset change only takes effect on next start
   };
 
   const handleResign = () => {
-    if (confirm('Tem certeza que deseja desistir?')) {
-      resign();
-    }
+    setResignDialogOpen(true);
+  };
+
+  const handleResignConfirm = () => {
+    resign();
+    setResignDialogOpen(false);
   };
 
   const handleDrawClaim = () => {
@@ -82,14 +88,12 @@ export function GameScreen() {
     if (claims.length === 0) return;
 
     const reason = claims[0] as ClaimableDrawReason;
-    const reasonLabels: Record<string, string> = {
-      'threefold-repetition': 'Repetição tripla',
-      'fifty-move-rule': 'Regra dos 50 lances',
-    };
+    setDrawDialogOpen(reason);
+  };
 
-    if (confirm(`Reivindicar empate por ${reasonLabels[reason] || reason}?`)) {
-      claimDraw(reason);
-    }
+  const handleDrawConfirm = (reason: ClaimableDrawReason) => {
+    claimDraw(reason);
+    setDrawDialogOpen(null);
   };
 
   // Compute player results for badges
@@ -310,6 +314,80 @@ export function GameScreen() {
           </div>
         </main>
       </div>
+
+      {/* Resignation Dialog */}
+      {resignDialogOpen && (
+        <div
+          className="fixed z-50 inset-0 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
+          role="dialog"
+          aria-label="Confirmar desistência"
+          onClick={() => setResignDialogOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-sm bg-surface rounded-xl border border-line p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-ink">Confirmar desistência</h3>
+              <button
+                onClick={() => setResignDialogOpen(false)}
+                className="size-8 rounded-lg text-ink-muted hover:text-ink hover:bg-surface-muted transition-colors flex items-center justify-center"
+                aria-label="Cancelar"
+              >
+                <IconX className="size-5" />
+              </button>
+            </div>
+            <p className="text-sm text-ink-muted mb-4">
+              Tem certeza que deseja desistir da partida? O adversário será declarado vencedor.
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setResignDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button variant="secondary" size="sm" onClick={handleResignConfirm}>
+                Desistir
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Draw Claim Dialog */}
+      {drawDialogOpen && (
+        <div
+          className="fixed z-50 inset-0 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
+          role="dialog"
+          aria-label="Confirmar empate"
+          onClick={() => setDrawDialogOpen(null)}
+        >
+          <div
+            className="relative w-full max-w-sm bg-surface rounded-xl border border-line p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-ink">Reivindicar empate</h3>
+              <button
+                onClick={() => setDrawDialogOpen(null)}
+                className="size-8 rounded-lg text-ink-muted hover:text-ink hover:bg-surface-muted transition-colors flex items-center justify-center"
+                aria-label="Cancelar"
+              >
+                <IconX className="size-5" />
+              </button>
+            </div>
+            <p className="text-sm text-ink-muted mb-4">
+              Reivindicar empate por {drawDialogOpen === 'threefold-repetition' ? 'repetição tripla' : 'regra dos 50 lances'}?
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setDrawDialogOpen(null)}>
+                Cancelar
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => handleDrawConfirm(drawDialogOpen)}>
+                Confirmar empate
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="border-t border-line hidden lg:block">
