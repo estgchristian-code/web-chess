@@ -34,16 +34,18 @@ export function GameControls({
     <div className="flex flex-col gap-2 w-full max-w-[480px]">
       {/* Preset selector (only when waiting) */}
       {phase === 'waiting' && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <label className="text-xs text-ink-muted font-medium">Tempo:</label>
+        <div className="flex items-center gap-2.5">
+          <label className="text-[0.6875rem] font-semibold tracking-[0.14em] text-ink-muted uppercase">
+            Tempo:
+          </label>
           <select
             value={preset}
             onChange={(e) => onPresetChange?.(e.target.value as ClockPreset)}
-            className="flex-1 min-w-[140px] px-2.5 py-1.5 text-sm bg-surface border border-line-strong rounded-control text-ink focus:outline-none focus:ring-2 focus:ring-accent/40 appearance-none bg-no-repeat bg-right pr-8"
+            className="h-10 min-w-[140px] flex-1 cursor-pointer appearance-none rounded-control border border-line/80 bg-surface bg-no-repeat px-3 pr-9 text-sm text-ink-soft transition-colors hover:border-line-strong hover:bg-surface-muted/40 focus:border-accent/50 focus:ring-2 focus:ring-accent/40 focus:outline-none"
             style={{
               backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")",
-              backgroundPosition: 'right 0.5rem center',
-              backgroundSize: '1.5em 1.5em',
+              backgroundPosition: 'right 0.6rem center',
+              backgroundSize: '1.25em 1.25em',
             }}
           >
             {presetOptions.map((p) => (
@@ -56,9 +58,9 @@ export function GameControls({
       )}
 
       {/* Primary action buttons */}
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {phase === 'waiting' && (
-          <Button size="lg" onClick={() => onStart(preset)} className="w-full sm:w-auto">
+          <Button size="lg" onClick={() => onStart(preset)} className="col-span-2 w-full">
             Nova partida
           </Button>
         )}
@@ -67,15 +69,15 @@ export function GameControls({
           <>
             <Button variant="secondary" size="md" onClick={onPause}>
               <IconPause className="size-4" />
-              <span className="hidden sm:inline">Pausar</span>
+              <span>Pausar</span>
             </Button>
             <Button variant="ghost" size="md" onClick={onDraw}>
               <IconFlag className="size-4" />
-              <span className="hidden sm:inline">Empatar</span>
+              <span>Empatar</span>
             </Button>
             <Button variant="ghost" size="md" onClick={onResign}>
               <IconX className="size-4" />
-              <span className="hidden sm:inline">Desistir</span>
+              <span>Desistir</span>
             </Button>
           </>
         )}
@@ -84,15 +86,15 @@ export function GameControls({
           <>
             <Button size="md" onClick={onResume}>
               <IconPlay className="size-4" />
-              <span className="hidden sm:inline">Retomar</span>
+              <span>Retomar</span>
             </Button>
             <Button variant="ghost" size="md" onClick={onDraw}>
               <IconFlag className="size-4" />
-              <span className="hidden sm:inline">Empatar</span>
+              <span>Empatar</span>
             </Button>
             <Button variant="ghost" size="md" onClick={onResign}>
               <IconX className="size-4" />
-              <span className="hidden sm:inline">Desistir</span>
+              <span>Desistir</span>
             </Button>
           </>
         )}
@@ -100,14 +102,14 @@ export function GameControls({
         {phase === 'finished' && (
           <Button variant="secondary" size="md" onClick={onRestart}>
             <IconRotateCcw className="size-4" />
-            <span className="hidden sm:inline">Reiniciar</span>
+            <span>Reiniciar</span>
           </Button>
         )}
 
         {/* Always show new game button */}
         <Button variant="ghost" size="md" onClick={onNewGame}>
           <IconRefreshCw className="size-4" />
-          <span className="hidden sm:inline">Nova partida</span>
+          <span>Nova partida</span>
         </Button>
       </div>
     </div>

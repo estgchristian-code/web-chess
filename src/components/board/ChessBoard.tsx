@@ -4,7 +4,8 @@ import { Chessboard } from 'react-chessboard';
 
 import { useGameStore } from '@/store/game';
 import type { Square } from '@/domain/chess/types';
-import { IconX } from '@/components/ui/icons';
+import { Button } from '@/components/ui/Button';
+import { IconRotateCcw, IconX } from '@/components/ui/icons';
 
 export function ChessBoard() {
   const { engine, phase, playMove, undoMove } = useGameStore();
@@ -187,16 +188,24 @@ export function ChessBoard() {
 
     // Last move highlight
     if (lastMove) {
-      styles[lastMove.from] = { backgroundColor: 'rgba(255, 255, 0, 0.25)' };
-      styles[lastMove.to] = { backgroundColor: 'rgba(255, 255, 0, 0.25)' };
+      styles[lastMove.from] = {
+        backgroundColor: 'rgba(212, 168, 67, 0.24)',
+        boxShadow: 'inset 0 0 0 1px rgba(212, 168, 67, 0.35)',
+      };
+      styles[lastMove.to] = {
+        backgroundColor: 'rgba(212, 168, 67, 0.24)',
+        boxShadow: 'inset 0 0 0 1px rgba(212, 168, 67, 0.35)',
+      };
     }
 
     // Check highlight
     if (checkedKingSquare) {
       styles[checkedKingSquare] = {
         ...styles[checkedKingSquare],
-        backgroundColor: 'rgba(255, 0, 0, 0.3)',
-        boxShadow: 'inset 0 0 0 2px rgba(255, 0, 0, 0.8)',
+        backgroundColor: 'rgba(196, 92, 74, 0.32)',
+        backgroundImage:
+          'radial-gradient(circle at center, rgba(196, 92, 74, 0.35) 0%, transparent 70%)',
+        boxShadow: 'inset 0 0 0 2px rgba(196, 92, 74, 0.85)',
       };
     }
 
@@ -204,9 +213,18 @@ export function ChessBoard() {
     if (checkmateSquare) {
       styles[checkmateSquare] = {
         ...styles[checkmateSquare],
-        backgroundColor: 'rgba(255, 0, 0, 0.4)',
-        boxShadow: 'inset 0 0 0 3px rgba(255, 0, 0, 0.9), 0 0 10px rgba(255, 0, 0, 0.5)',
-        animation: 'pulse-checkmate 1s ease-in-out infinite',
+        backgroundColor: 'rgba(196, 92, 74, 0.38)',
+        boxShadow: 'inset 0 0 0 3px rgba(196, 92, 74, 0.9), 0 0 12px rgba(196, 92, 74, 0.5)',
+        animation: 'pulse-checkmate 1.2s ease-in-out infinite',
+      };
+    }
+
+    // Selected piece
+    if (selectedSquare) {
+      styles[selectedSquare] = {
+        ...styles[selectedSquare],
+        backgroundColor: 'rgba(74, 156, 110, 0.3)',
+        boxShadow: 'inset 0 0 0 3px rgba(74, 156, 110, 0.95)',
       };
     }
 
@@ -217,13 +235,14 @@ export function ChessBoard() {
         // Enemy piece: capture indicator (ring)
         styles[target] = {
           ...styles[target],
-          boxShadow: 'inset 0 0 0 3px rgba(255, 100, 100, 0.9)',
+          boxShadow: 'inset 0 0 0 3px rgba(74, 156, 110, 0.85)',
         };
       } else {
         // Empty square: dot
         styles[target] = {
           ...styles[target],
-          backgroundImage: 'radial-gradient(circle at center, rgba(100, 200, 100, 0.6) 0%, transparent 70%)',
+          backgroundImage:
+            'radial-gradient(circle at center, rgba(74, 156, 110, 0.85) 0 13%, rgba(74, 156, 110, 0.3) 14% 22%, transparent 23%)',
         };
       }
     }
@@ -232,12 +251,21 @@ export function ChessBoard() {
     if (promotionSquare) {
       styles[promotionSquare] = {
         ...styles[promotionSquare],
-        backgroundColor: 'rgba(255, 255, 0, 0.3)',
+        backgroundColor: 'rgba(74, 156, 110, 0.28)',
+        boxShadow: 'inset 0 0 0 3px rgba(74, 156, 110, 0.9)',
       };
     }
 
     return styles;
-  }, [legalMoveTargets, engine, lastMove, checkedKingSquare, promotionSquare, checkmateSquare]);
+  }, [
+    legalMoveTargets,
+    engine,
+    lastMove,
+    checkedKingSquare,
+    selectedSquare,
+    promotionSquare,
+    checkmateSquare,
+  ]);
 
   const handlePieceDrop = useCallback(
     ({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }) => {
@@ -288,8 +316,8 @@ export function ChessBoard() {
   }, []);
 
   return (
-    <div className="relative flex flex-col items-center gap-4">
-      <div data-testid="chessboard-board" className="relative">
+    <div className="relative flex flex-col items-center gap-3">
+      <div data-testid="chessboard-board" className="relative w-full">
         <Chessboard
           data-testid="chessboard-board"
           options={{
@@ -301,6 +329,26 @@ export function ChessBoard() {
             onSquareMouseDown: handleMouseDown,
             onSquareMouseUp: handleMouseUp,
             squareStyles,
+            boardStyle: {
+              borderRadius: '0.875rem',
+              overflow: 'hidden',
+              boxShadow: 'var(--shadow-board)',
+            },
+            lightSquareStyle: { backgroundColor: 'var(--color-board-light)' },
+            darkSquareStyle: { backgroundColor: 'var(--color-board-dark)' },
+            dropSquareStyle: {
+              boxShadow: 'inset 0 0 0 3px rgba(74, 156, 110, 0.55)',
+            },
+            lightSquareNotationStyle: { color: 'rgba(58, 40, 22, 0.55)' },
+            darkSquareNotationStyle: { color: 'rgba(255, 255, 255, 0.55)' },
+            alphaNotationStyle: { fontSize: '0.6875rem', fontWeight: 600 },
+            numericNotationStyle: { fontSize: '0.6875rem', fontWeight: 600 },
+            animationDurationInMs: 180,
+            draggingPieceStyle: {
+              transform: 'scale(1.12)',
+              filter: 'drop-shadow(0 10px 16px rgba(0, 0, 0, 0.45))',
+            },
+            draggingPieceGhostStyle: { opacity: 0.35 },
           }}
         />
         {promotionSquare && (
@@ -311,17 +359,19 @@ export function ChessBoard() {
           />
         )}
       </div>
-      <div className="flex items-center justify-center gap-2 text-sm text-ink-muted">
-        <button
+      <div className="flex items-center justify-center">
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={() => {
             undoMove();
             setSelectedSquare(null);
           }}
           disabled={phase === 'waiting'}
-          className="px-3 py-1.5 rounded-control border border-line-strong bg-surface text-ink hover:bg-surface-muted disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
         >
+          <IconRotateCcw className="size-3.5" />
           Desfazer
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -345,32 +395,35 @@ function PromotionDialog({
 
   return (
     <div
-      className="fixed z-50 inset-0 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
+      className="animate-dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-md"
       role="dialog"
+      aria-modal="true"
       aria-label="Escolha a peça para promoção"
       onClick={onCancel}
     >
       <div
-        className="relative w-full max-w-sm bg-surface rounded-xl border border-line p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+        className="animate-dialog-panel relative w-full max-w-sm rounded-2xl border border-line/80 bg-surface p-5 shadow-lift"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-ink">Promover peão</h3>
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <h3 className="text-base font-semibold tracking-tight text-ink">Promover peão</h3>
           <button
+            type="button"
             onClick={onCancel}
-            className="size-8 rounded-lg text-ink-muted hover:text-ink hover:bg-surface-muted transition-colors flex items-center justify-center"
+            className="flex size-8 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
             aria-label="Cancelar"
           >
             <IconX className="size-5" />
           </button>
         </div>
-        <p className="text-xs text-ink-muted mb-3">Escolha a peça para promoção</p>
-        <div className="grid grid-cols-2 gap-2 mb-3">
+        <p className="mb-4 text-sm leading-relaxed text-ink-soft">Escolha a peça para promoção</p>
+        <div className="mb-4 grid grid-cols-2 gap-2.5">
           {pieceOptions.map(({ piece, label, symbol }) => (
             <button
               key={piece}
+              type="button"
               onClick={() => onSelect(piece)}
-              className="flex flex-col items-center gap-1.5 px-3 py-3 text-left text-sm font-medium text-ink hover:bg-surface-muted rounded-xl border border-line transition-all duration-150 hover:border-accent/30 hover:shadow-md"
+              className="flex flex-col items-center gap-1.5 rounded-xl border border-line/80 bg-surface-muted/30 px-3 py-3 text-left text-sm font-medium text-ink transition-[background-color,border-color,box-shadow,transform] duration-200 hover:border-accent/40 hover:bg-surface-muted hover:shadow-card active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
             >
               <span className="text-3xl" aria-hidden="true">
                 {symbol}
@@ -378,14 +431,11 @@ function PromotionDialog({
               <span className="text-xs font-medium text-ink-muted">{label}</span>
             </button>
           ))}
-        <button
-          onClick={onCancel}
-          className="w-full px-3 py-2 text-sm font-medium text-ink-muted hover:text-ink hover:bg-surface-muted rounded-xl border border-line transition-colors"
-        >
+        </div>
+        <Button variant="ghost" className="w-full" onClick={onCancel}>
           Cancelar
-        </button>
+        </Button>
       </div>
     </div>
-  </div>
   );
 }

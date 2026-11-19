@@ -10,7 +10,7 @@ type BadgeProps = ComponentProps<'span'> & {
 
 const tones: Record<BadgeTone, string> = {
   neutral: 'border-line-strong bg-surface text-ink-soft',
-  accent: 'border-accent/20 bg-accent-soft text-accent-strong',
+  accent: 'border-accent/25 bg-accent-soft text-accent-bright',
   muted: 'border-transparent bg-surface-muted text-ink-muted',
 };
 

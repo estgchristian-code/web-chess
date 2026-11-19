@@ -20,6 +20,31 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-color: var(--color-line-strong);
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-ink-muted);
+  }
+
   ::selection {
     background-color: var(--color-accent-soft);
     color: var(--color-accent-strong);
@@ -52,10 +77,54 @@
 }
 
 @keyframes pulse-checkmate {
-  0%, 100% {
-    box-shadow: inset 0 0 0 3px rgba(255, 0, 0, 0.9), 0 0 10px rgba(255, 0, 0, 0.5);
+  0%,
+  100% {
+    box-shadow: inset 0 0 0 3px rgba(196, 92, 74, 0.9), 0 0 12px rgba(196, 92, 74, 0.45);
   }
   50% {
-    box-shadow: inset 0 0 0 3px rgba(255, 0, 0, 0.9), 0 0 20px rgba(255, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.4);
+    box-shadow: inset 0 0 0 3px rgba(196, 92, 74, 1), 0 0 22px rgba(196, 92, 74, 0.7);
   }
+}
+
+@keyframes dialog-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-dialog-backdrop {
+  animation: dialog-backdrop-in 180ms ease-out both;
+}
+
+.animate-dialog-panel {
+  animation: dialog-panel-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Peças: leve respiro e profundidade, sem alterar o alvo de arraste. */
+[data-testid='chessboard-board'] [data-piece] > svg {
+  transform: scale(0.95);
+  transform-origin: center;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.32));
+  transition:
+    transform 140ms ease,
+    filter 140ms ease;
+}
+
+[data-testid='chessboard-board'] [data-piece]:hover > svg {
+  transform: scale(0.98);
+  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.4));
 }

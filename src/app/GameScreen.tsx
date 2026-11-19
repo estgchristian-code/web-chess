@@ -105,19 +105,29 @@ export function GameScreen() {
     return winner === 'b' ? 'win' : 'loss';
   };
 
+  const phaseLabel: Record<typeof phase, string> = {
+    waiting: 'Aguardando',
+    playing: 'Em jogo',
+    paused: 'Pausada',
+    finished: 'Finalizada',
+  };
+
   return (
     <div className="flex flex-col h-full w-full bg-canvas">
       {/* Mobile menu bar */}
       {isMobile && (
-        <header className="sticky top-0 z-20 border-b border-line/80 bg-canvas/95 backdrop-blur-sm">
+        <header className="sticky top-0 z-20 border-b border-line/70 bg-canvas/90 backdrop-blur-xl">
           <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-4 px-4 sm:px-6">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="size-9 rounded-lg bg-surface border border-line flex items-center justify-center text-ink hover:bg-surface-muted transition-colors"
+              className="flex size-9 items-center justify-center rounded-control border border-line/80 bg-surface text-ink shadow-sm transition-colors hover:bg-surface-muted focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
               aria-label="Menu"
             >
               {sidebarOpen ? <IconChevronLeft className="size-5" /> : <IconMenu className="size-5" />}
             </button>
+            <span className="text-xs font-medium tracking-[0.14em] text-ink-muted uppercase">
+              Painel da partida
+            </span>
           </div>
         </header>
       )}
@@ -135,19 +145,19 @@ export function GameScreen() {
         {/* Sidebar (right panel) - Mobile: slide-over, Desktop: fixed */}
         <aside
           className={cn(
-            'fixed inset-y-0 right-0 z-50 w-80 bg-canvas border-l border-line flex flex-col transition-transform duration-300 ease-out lg:relative lg:translate-x-0 lg:z-auto',
+            'fixed inset-y-0 right-0 z-50 flex w-80 flex-col border-l border-line/80 bg-canvas shadow-[0_0_60px_-20px_rgba(0,0,0,0.8)] transition-transform duration-300 ease-out lg:relative lg:z-auto lg:translate-x-0 lg:shadow-none',
             isMobile && !sidebarOpen && 'translate-x-full',
           )}
           aria-label="Painel lateral"
         >
-          <div className="flex flex-col h-full">
+          <div className="flex h-full flex-col">
             {/* Sidebar header - mobile close button */}
             {isMobile && (
-              <div className="flex items-center justify-between p-4 border-b border-line">
-                <h3 className="text-sm font-semibold text-ink">Painel</h3>
+              <div className="flex items-center justify-between border-b border-line/80 p-4">
+                <h3 className="text-sm font-semibold tracking-tight text-ink">Painel</h3>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="size-8 rounded-lg bg-surface border border-line flex items-center justify-center text-ink hover:bg-surface-muted transition-colors"
+                  className="flex size-8 items-center justify-center rounded-control border border-line/80 bg-surface text-ink transition-colors hover:bg-surface-muted focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
                   aria-label="Fechar painel"
                 >
                   <IconChevronLeft className="size-5" />
@@ -155,12 +165,14 @@ export function GameScreen() {
               </div>
             )}
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex flex-1 flex-col gap-3.5 overflow-y-auto p-4">
               {/* Move History */}
-              <Card className="flex-1 min-h-0">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-ink-muted uppercase tracking-wider">Histórico</h3>
-                  <Badge tone="neutral" className="text-xs">
+              <Card className="flex min-h-0 flex-col p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h3 className="text-[0.6875rem] font-semibold tracking-[0.16em] text-ink-muted uppercase">
+                    Histórico
+                  </h3>
+                  <Badge tone="neutral" className="normal-case">
                     {history.length} lances
                   </Badge>
                 </div>
@@ -168,7 +180,7 @@ export function GameScreen() {
               </Card>
 
               {/* Game Controls */}
-              <Card>
+              <Card className="p-4">
                 <GameControls
                   phase={phase}
                   preset={preset}
@@ -184,51 +196,62 @@ export function GameScreen() {
               </Card>
 
               {/* Game Status */}
-              <Card>
-                <div className="p-4 space-y-3">
-                  <h3 className="text-sm font-semibold text-ink-muted uppercase tracking-wider">Status</h3>
-                  <dl className="space-y-2 text-sm">
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-ink-muted">Fase</dt>
-                      <dd className="font-medium text-ink capitalize">{phase}</dd>
-                    </div>
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-ink-muted">Vez</dt>
-                      <dd className="font-medium text-ink">
-                        {status.status.kind === 'playing'
-                          ? isWhiteTurn
-                            ? 'Brancas'
-                            : 'Negras'
-                          : '—'}
-                      </dd>
-                    </div>
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-ink-muted">Xeque</dt>
-                      <dd className="font-medium text-ink">{status.details.inCheck ? 'Sim' : 'Não'}</dd>
-                    </div>
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-ink-muted">Repetições</dt>
-                      <dd className="font-medium text-ink tabular-nums">{status.details.repetitionCount}</dd>
-                    </div>
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-ink-muted">Meio-lances</dt>
-                      <dd className="font-medium text-ink tabular-nums">{status.details.halfmoveClock}</dd>
-                    </div>
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-ink-muted">Preset</dt>
-                      <dd className="font-medium text-ink font-mono">{preset}</dd>
-                    </div>
-                  </dl>
-                </div>
+              <Card className="p-4">
+                <h3 className="mb-3 text-[0.6875rem] font-semibold tracking-[0.16em] text-ink-muted uppercase">
+                  Status
+                </h3>
+                <dl className="space-y-2 text-sm">
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-ink-muted">Fase</dt>
+                    <dd className="font-medium text-ink">{phaseLabel[phase]}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-ink-muted">Vez</dt>
+                    <dd className="font-medium text-ink">
+                      {status.status.kind === 'playing'
+                        ? isWhiteTurn
+                          ? 'Brancas'
+                          : 'Negras'
+                        : '—'}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-ink-muted">Xeque</dt>
+                    <dd
+                      className={cn(
+                        'font-medium',
+                        status.details.inCheck ? 'text-danger' : 'text-ink',
+                      )}
+                    >
+                      {status.details.inCheck ? 'Sim' : 'Não'}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-ink-muted">Repetições</dt>
+                    <dd className="font-medium text-ink tabular-nums">
+                      {status.details.repetitionCount}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-ink-muted">Meio-lances</dt>
+                    <dd className="font-medium text-ink tabular-nums">
+                      {status.details.halfmoveClock}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-ink-muted">Preset</dt>
+                    <dd className="font-mono font-medium text-ink">{preset}</dd>
+                  </div>
+                </dl>
               </Card>
             </div>
           </div>
         </aside>
 
         {/* Main content area */}
-        <main className="flex-1 flex flex-col min-w-0 lg:mr-80">
+        <main className="flex min-w-0 flex-1 flex-col">
           {/* Board area with player cards top/bottom */}
-          <div className="flex flex-col flex-1 items-center justify-center p-4 gap-3 min-h-0">
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3.5 p-4 sm:gap-4 sm:p-6">
             {/* Top player (Black - plays from top) */}
             <PlayerCardWithPhase
               side="black"
@@ -264,33 +287,39 @@ export function GameScreen() {
       {/* Resignation Dialog */}
       {resignDialogOpen && (
         <div
-          className="fixed z-50 inset-0 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
+          className="animate-dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-md"
           role="dialog"
+          aria-modal="true"
           aria-label="Confirmar desistência"
           onClick={() => setResignDialogOpen(false)}
         >
           <div
-            className="relative w-full max-w-sm bg-surface rounded-xl border border-line p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+            className="animate-dialog-panel relative w-full max-w-sm rounded-2xl border border-line/80 bg-surface p-5 shadow-lift"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-ink">Confirmar desistência</h3>
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <h3 className="text-base font-semibold tracking-tight text-ink">Confirmar desistência</h3>
               <button
+                type="button"
                 onClick={() => setResignDialogOpen(false)}
-                className="size-8 rounded-lg text-ink-muted hover:text-ink hover:bg-surface-muted transition-colors flex items-center justify-center"
+                className="flex size-8 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
                 aria-label="Cancelar"
               >
                 <IconX className="size-5" />
               </button>
             </div>
-            <p className="text-sm text-ink-muted mb-4">
+            <p className="mb-5 text-sm leading-relaxed text-ink-soft">
               Tem certeza que deseja desistir da partida? O adversário será declarado vencedor.
             </p>
             <div className="flex items-center justify-end gap-2">
               <Button variant="ghost" size="sm" onClick={() => setResignDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button variant="secondary" size="sm" onClick={handleResignConfirm}>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleResignConfirm}
+              >
                 Desistir
               </Button>
             </div>
@@ -301,45 +330,45 @@ export function GameScreen() {
       {/* Draw Claim Dialog */}
       {drawDialogOpen && (
         <div
-          className="fixed z-50 inset-0 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
+          className="animate-dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-md"
           role="dialog"
+          aria-modal="true"
           aria-label="Confirmar empate"
           onClick={() => setDrawDialogOpen(null)}
         >
           <div
-            className="relative w-full max-w-sm bg-surface rounded-xl border border-line p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+            className="animate-dialog-panel relative w-full max-w-sm rounded-2xl border border-line/80 bg-surface p-5 shadow-lift"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-ink">Reivindicar empate</h3>
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <h3 className="text-base font-semibold tracking-tight text-ink">Reivindicar empate</h3>
               <button
+                type="button"
                 onClick={() => setDrawDialogOpen(null)}
-                className="size-8 rounded-lg text-ink-muted hover:text-ink hover:bg-surface-muted transition-colors flex items-center justify-center"
+                className="flex size-8 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
                 aria-label="Cancelar"
               >
                 <IconX className="size-5" />
               </button>
             </div>
-            <p className="text-sm text-ink-muted mb-4">
-              Reivindicar empate por {drawDialogOpen === 'threefold-repetition' ? 'repetição tripla' : 'regra dos 50 lances'}?
+            <p className="mb-5 text-sm leading-relaxed text-ink-soft">
+              Reivindicar empate por{' '}
+              {drawDialogOpen === 'threefold-repetition'
+                ? 'repetição tripla'
+                : 'regra dos 50 lances'}
+              ?
             </p>
             <div className="flex items-center justify-end gap-2">
               <Button variant="ghost" size="sm" onClick={() => setDrawDialogOpen(null)}>
                 Cancelar
               </Button>
-              <Button variant="secondary" size="sm" onClick={() => handleDrawConfirm(drawDialogOpen)}>
+              <Button variant="primary" size="sm" onClick={() => handleDrawConfirm(drawDialogOpen)}>
                 Confirmar empate
               </Button>
             </div>
           </div>
         </div>
       )}
-
-      {/* Footer */}
-      <footer className="border-t border-line hidden lg:block">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-1.5 px-5 py-4 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
-        </div>
-      </footer>
     </div>
   );
 }

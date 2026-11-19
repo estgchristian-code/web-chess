@@ -25,22 +25,31 @@
   --color-accent: #4a9c6e;
   --color-accent-strong: #3a7d56;
   --color-accent-soft: #1a2e23;
+  --color-accent-bright: #7ed3a1;
 
-  /* Tabuleiro */
-  --color-board-light: #2d2d2d;
-  --color-board-dark: #1a1a1a;
+  /* Tabuleiro - madeira suave harmonizada com o grafite */
+  --color-board-light: #e9dcc3;
+  --color-board-dark: #a77b56;
 
   /* Estados */
   --color-warning: #d4a843;
+  --color-warning-strong: #e8c76b;
   --color-warning-soft: #2d2510;
   --color-danger: #c45c4a;
   --color-danger-soft: #2d1510;
+  --color-neutral: #6d7a72;
 
   /* Raios */
   --radius-control: 0.625rem;
   --radius-card: 1.125rem;
 
   /* Elevação - sombras adaptadas para fundo escuro */
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px -16px rgba(0, 0, 0, 0.4);
-  --shadow-lift: 0 1px 2px rgba(0, 0, 0, 0.3), 0 24px 48px -24px rgba(0, 0, 0, 0.5);
+  --shadow-card:
+    0 1px 0 rgba(255, 255, 255, 0.035) inset, 0 1px 2px rgba(0, 0, 0, 0.35),
+    0 16px 40px -24px rgba(0, 0, 0, 0.55);
+  --shadow-lift:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 28px 60px -24px rgba(0, 0, 0, 0.75);
+  --shadow-board: 0 26px 60px -28px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --shadow-control:
+    0 1px 0 rgba(255, 255, 255, 0.12) inset, 0 10px 22px -12px rgba(0, 0, 0, 0.65);
 }

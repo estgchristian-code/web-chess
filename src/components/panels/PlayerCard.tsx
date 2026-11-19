@@ -29,33 +29,56 @@ function renderPlayerCard({
   phase = 'waiting',
 }: PlayerCardProps) {
   const isWhite = side === 'white';
-  const avatarBg = isWhite ? 'bg-gradient-to-br from-amber-100 to-amber-300' : 'bg-gradient-to-br from-slate-700 to-slate-900';
-  const avatarBorder = isWhite ? 'border-amber-300' : 'border-slate-600';
-  const pieceColor = isWhite ? 'text-amber-600' : 'text-slate-300';
+  const expired = time === '0:00';
+  const paused = phase === 'paused';
+  const showActions = active && phase === 'playing' && (Boolean(onDraw) || Boolean(onResign));
+
+  const avatarBg = isWhite
+    ? 'bg-gradient-to-br from-amber-100 via-amber-200 to-amber-400'
+    : 'bg-gradient-to-br from-slate-600 via-slate-700 to-slate-900';
+  const avatarBorder = isWhite ? 'border-amber-200/80' : 'border-slate-500/70';
+  const pieceColor = isWhite ? 'text-amber-700' : 'text-slate-100';
+
+  const clockTone = expired
+    ? 'border-danger/45 bg-danger-soft text-danger'
+    : paused
+      ? 'border-dashed border-line-strong bg-surface-muted/60 text-ink-muted'
+      : active
+        ? 'border-accent/45 bg-accent-soft text-accent-bright shadow-[0_0_24px_-10px_rgba(74,156,110,0.9)]'
+        : 'border-line/80 bg-surface text-ink';
 
   return (
     <div
       className={cn(
-        'flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 transition-all duration-200',
-        active ? 'bg-surface-muted/60 ring-2 ring-accent/40' : 'bg-transparent hover:bg-surface-muted/30',
+        'flex w-full max-w-[600px] mx-auto items-center justify-between gap-3 rounded-2xl border px-3.5 py-2.5',
+        'transition-[background-color,border-color,box-shadow] duration-300',
+        active
+          ? 'border-accent/35 bg-accent-soft/25 shadow-[0_14px_34px_-24px_rgba(74,156,110,0.8)]'
+          : 'border-line/60 bg-surface/35',
       )}
     >
-      <div className="flex items-center gap-3 min-w-0 flex-1">
+      <div className="flex min-w-0 items-center gap-3">
         <div
           className={cn(
-            'relative size-10 shrink-0 rounded-full border-2 flex items-center justify-center',
+            'relative flex size-11 shrink-0 items-center justify-center rounded-full border-2',
+            'shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_6px_16px_-8px_rgba(0,0,0,0.9)]',
+            'transition-shadow duration-300',
             avatarBg,
             avatarBorder,
-            active && 'ring-2 ring-accent ring-offset-2 ring-offset-surface',
+            active && 'ring-2 ring-accent/40',
           )}
         >
-          <span className={cn('text-xl font-bold select-none', pieceColor)}>
-            {side === 'white' ? '♔' : '♚'}
+          <span
+            aria-hidden="true"
+            className={cn('select-none text-2xl leading-none font-bold', pieceColor)}
+          >
+            {isWhite ? '♔' : '♚'}
           </span>
           {result && (
             <span
               className={cn(
-                'absolute -bottom-1 -right-1 size-5 rounded-full border-2 border-surface flex items-center justify-center text-[0.5rem] font-bold',
+                'absolute -right-1 -bottom-1 flex size-5 items-center justify-center rounded-full',
+                'border-2 border-surface text-[0.5rem] font-bold shadow-md',
                 result === 'win' && 'bg-accent text-white',
                 result === 'loss' && 'bg-warning text-white',
                 result === 'draw' && 'bg-neutral text-white',
@@ -65,54 +88,65 @@ function renderPlayerCard({
             </span>
           )}
         </div>
+
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-ink">{name}</p>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            {rating !== undefined && (
-              <span className="text-xs text-ink-muted font-mono">
-                {rating}
-              </span>
+          <div className="flex items-center gap-2">
+            <p className="truncate text-[0.9375rem] leading-tight font-semibold tracking-tight text-ink">
+              {name}
+            </p>
+            {active && (
+              <span
+                aria-hidden="true"
+                className="size-1.5 shrink-0 animate-pulse rounded-full bg-accent-bright shadow-[0_0_8px_1px_rgba(126,211,161,0.6)]"
+              />
             )}
-            <span className="text-xs text-ink-muted">{side === 'white' ? 'Brancas' : 'Negras'}</span>
+          </div>
+
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            {rating !== undefined && (
+              <span className="font-mono text-[0.6875rem] text-ink-muted">{rating}</span>
+            )}
+            <span className="text-[0.625rem] font-semibold tracking-[0.16em] text-ink-muted/90 uppercase">
+              Jogador local
+            </span>
+
+            {showActions && (
+              <>
+                {onDraw && (
+                  <button
+                    type="button"
+                    onClick={onDraw}
+                    title="Oferecer empate"
+                    className="rounded-md px-1.5 py-0.5 text-[0.6875rem] font-medium text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
+                  >
+                    = Empate
+                  </button>
+                )}
+                {onResign && (
+                  <button
+                    type="button"
+                    onClick={onResign}
+                    title="Desistir"
+                    className="rounded-md px-1.5 py-0.5 text-[0.6875rem] font-medium text-warning/90 transition-colors hover:bg-warning-soft hover:text-warning-strong focus-visible:ring-2 focus-visible:ring-warning/40 focus-visible:outline-none"
+                  >
+                    Desistir
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col items-end gap-1.5 shrink-0">
-        <span
-          className={cn(
-            'font-mono text-lg font-semibold tabular-nums rounded-lg px-3 py-1.5 border transition-colors',
-            active
-              ? 'bg-accent-soft border-accent/30 text-accent-strong'
-              : 'bg-surface border-line text-ink',
-          )}
-        >
-          {time}
-        </span>
-
-        {active && phase === 'playing' && (
-          <div className="flex items-center gap-1.5">
-            {onDraw && (
-              <button
-                onClick={onDraw}
-                className="px-2 py-1 text-xs text-ink-muted hover:text-ink hover:bg-surface-muted rounded transition-colors"
-                title="Oferecer empate"
-              >
-                = Empate
-              </button>
-            )}
-            {onResign && (
-              <button
-                onClick={onResign}
-                className="px-2 py-1 text-xs text-warning hover:text-warning-strong hover:bg-warning-soft rounded transition-colors"
-                title="Desistir"
-              >
-                Desistir
-              </button>
-            )}
-          </div>
+      <span
+        className={cn(
+          'shrink-0 rounded-xl border px-3 py-1.5 text-right font-mono text-lg font-semibold tracking-tight tabular-nums',
+          'transition-[color,background-color,border-color,box-shadow] duration-300',
+          clockTone,
         )}
-      </div>
+      >
+        {time}
+      </span>
     </div>
   );
 }
