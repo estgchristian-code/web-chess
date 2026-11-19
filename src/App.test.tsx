@@ -15,16 +15,19 @@ afterEach(() => {
 });
 
 describe('App', () => {
-  it('renderiza o jogo com o título principal', () => {
+  it('renderiza o jogo sem título no cabeçalho', () => {
     render(<App />);
 
-    expect(screen.getAllByText('Xadrez')).toHaveLength(2);
+    expect(screen.queryByText('Xadrez')).not.toBeInTheDocument();
   });
 
   it('inicia no estado aguardando início', () => {
     render(<App />);
 
-    expect(screen.getByText('Aguardando início')).toBeInTheDocument();
+    // O estado de espera é verificado pela presença do botão "Nova partida" habilitado
+    const buttons = screen.getAllByRole('button', { name: 'Nova partida' });
+    expect(buttons.length).toBeGreaterThan(0);
+    expect(buttons[0]).not.toBeDisabled();
   });
 
   it('exibe o botão Nova partida habilitado no estado waiting', () => {

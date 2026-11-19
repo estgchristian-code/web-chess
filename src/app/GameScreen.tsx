@@ -107,74 +107,20 @@ export function GameScreen() {
 
   return (
     <div className="flex flex-col h-full w-full bg-canvas">
-      {/* Top header bar */}
-      <header className="sticky top-0 z-20 border-b border-line/80 bg-canvas/95 backdrop-blur-sm">
-        <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-          {/* Left: Menu + Title */}
-          <div className="flex items-center gap-3">
-            {isMobile && (
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="size-9 rounded-lg bg-surface border border-line flex items-center justify-center text-ink hover:bg-surface-muted transition-colors"
-                aria-label="Menu"
-              >
-                {sidebarOpen ? <IconChevronLeft className="size-5" /> : <IconMenu className="size-5" />}
-              </button>
-            )}
-            <div className="flex items-center gap-2">
-              <svg
-                className="size-5 text-accent"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.6}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M12 3.5 5 6.2v5.1c0 4.2 2.9 7.6 7 9.2 4.1-1.6 7-5 7-9.2V6.2L12 3.5Z" />
-                <path d="m9.2 11.6 2 2.1 3.6-4" />
-              </svg>
-              <span className="text-base font-semibold tracking-tight text-ink">Xadrez</span>
-            </div>
+      {/* Mobile menu bar */}
+      {isMobile && (
+        <header className="sticky top-0 z-20 border-b border-line/80 bg-canvas/95 backdrop-blur-sm">
+          <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-4 px-4 sm:px-6">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="size-9 rounded-lg bg-surface border border-line flex items-center justify-center text-ink hover:bg-surface-muted transition-colors"
+              aria-label="Menu"
+            >
+              {sidebarOpen ? <IconChevronLeft className="size-5" /> : <IconMenu className="size-5" />}
+            </button>
           </div>
-
-          {/* Center: Status badges */}
-          <div className="flex items-center gap-2 flex-wrap justify-center">
-            {phase === 'finished' && gameResult && (
-              <Badge tone="accent" className="text-xs">
-                {gameResult.kind === 'checkmate'
-                  ? `Xeque-mate — ${gameResult.winner === 'w' ? 'Brancas' : 'Negras'} vencem`
-                  : gameResult.kind === 'timeout'
-                    ? `Tempo esgotado — ${gameResult.winner === 'w' ? 'Brancas' : 'Negras'} vencem`
-                    : gameResult.kind === 'resignation'
-                      ? `Desistência — ${gameResult.winner === 'w' ? 'Brancas' : 'Negras'} vencem`
-                      : `Empate — ${gameResult.reason}`}
-              </Badge>
-            )}
-            {phase === 'playing' && status.status.kind === 'playing' && status.details.inCheck && (
-              <Badge tone="accent" className="text-xs animate-pulse">
-                Xeque!
-              </Badge>
-            )}
-            {phase === 'paused' && (
-              <Badge tone="neutral" className="text-xs">
-                Pausado
-              </Badge>
-            )}
-            {phase === 'waiting' && (
-              <Badge tone="neutral" className="text-xs">
-                Aguardando início
-              </Badge>
-            )}
-          </div>
-
-          {/* Right: Version */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-ink-muted font-mono hidden sm:block">v0.1</span>
-          </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <div className="flex flex-1 overflow-hidden">
         {/* Mobile sidebar overlay */}
