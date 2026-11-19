@@ -125,6 +125,17 @@ export function IconChevronLeft({ className, ...props }: IconProps) {
   );
 }
 
+export function IconPalette({ className, ...props }: IconProps) {
+  return (
+    <IconBase className={className} {...props}>
+      <path d="M12 3.5a8.5 8.5 0 1 0 0 17h1.2a1.8 1.8 0 0 0 0-3.6h-.7a1.7 1.7 0 0 1 0-3.4h2.2a5.3 5.3 0 0 0 0-10H12Z" />
+      <circle cx="8.2" cy="9" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="11.4" cy="6.7" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="15.2" cy="7.8" r="0.9" fill="currentColor" stroke="none" />
+    </IconBase>
+  );
+}
+
 export function IconRefreshCw({ className, ...props }: IconProps) {
   return (
     <IconBase className={className} {...props}>

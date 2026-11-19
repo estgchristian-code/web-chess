@@ -128,3 +128,132 @@
   transform: scale(0.98);
   filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.4));
 }
+
+/* ---------------------------------------------------------------------------
+ * Aparência personalizável
+ * As preferências são aplicadas como atributos data-* em <html> pelo store de
+ * aparência. Nada aqui afeta regras, relógios ou estado da partida.
+ * ------------------------------------------------------------------------- */
+
+html[data-background] {
+  color-scheme: dark;
+}
+
+html[data-background='preto'] {
+  --color-canvas: #0b0b0c;
+  --color-surface: #141416;
+  --color-surface-muted: #1d1d20;
+  --color-surface-sunken: #26262a;
+  --color-ink: #f7f7f8;
+  --color-ink-soft: #d6d6d9;
+  --color-ink-muted: #a8a8ae;
+  --color-line: #2c2c30;
+  --color-line-strong: #3a3a40;
+}
+
+html[data-background='cinza'] {
+  --color-canvas: #4b4b4b;
+  --color-surface: #565656;
+  --color-surface-muted: #616161;
+  --color-surface-sunken: #6c6c6c;
+  --color-ink: #fafafa;
+  --color-ink-soft: #e3e3e3;
+  --color-ink-muted: #c2c2c2;
+  --color-line: #6a6a6a;
+  --color-line-strong: #7d7d7d;
+}
+
+html[data-background='azul-escuro'] {
+  --color-canvas: #12202f;
+  --color-surface: #18293b;
+  --color-surface-muted: #1f3349;
+  --color-surface-sunken: #274058;
+  --color-ink: #f1f6fb;
+  --color-ink-soft: #d1dfec;
+  --color-ink-muted: #9fb3c6;
+  --color-line: #2b455f;
+  --color-line-strong: #3a5a78;
+}
+
+html[data-background='verde-escuro'] {
+  --color-canvas: #10231b;
+  --color-surface: #162d22;
+  --color-surface-muted: #1d382b;
+  --color-surface-sunken: #254535;
+  --color-ink: #f1f7f3;
+  --color-ink-soft: #d0e2d7;
+  --color-ink-muted: #9fb9ab;
+  --color-line: #294a38;
+  --color-line-strong: #38614e;
+  --color-accent: #5cb183;
+  --color-accent-strong: #48916a;
+  --color-accent-soft: #1c3a2a;
+  --color-accent-bright: #8fe0b4;
+}
+
+html[data-background='bege'] {
+  color-scheme: light;
+  --color-canvas: #efe9dd;
+  --color-surface: #f8f4eb;
+  --color-surface-muted: #e8e1d3;
+  --color-surface-sunken: #ded6c6;
+  --color-ink: #2f2a22;
+  --color-ink-soft: #4c453a;
+  --color-ink-muted: #756b5b;
+  --color-line: #d5cbb9;
+  --color-line-strong: #bfb29c;
+  --color-accent: #377a52;
+  --color-accent-strong: #2b6342;
+  --color-accent-soft: #dcebe0;
+  --color-accent-bright: #2b6342;
+  --color-warning: #8a6414;
+  --color-warning-strong: #6f4f0e;
+  --color-warning-soft: #f2e7c6;
+  --color-danger: #b44432;
+  --color-danger-soft: #f5e0db;
+  --color-neutral: #7a7264;
+  --shadow-board:
+    0 26px 60px -30px rgba(60, 45, 25, 0.4), 0 0 0 1px rgba(47, 42, 34, 0.12);
+}
+
+html[data-board-theme='madeira'] {
+  --color-board-light: #e9dcc3;
+  --color-board-dark: #a77b56;
+  --color-board-notation-light: rgba(58, 40, 22, 0.55);
+  --color-board-notation-dark: rgba(255, 255, 255, 0.62);
+}
+
+html[data-board-theme='verde'] {
+  --color-board-light: #eeeed2;
+  --color-board-dark: #4f7a4a;
+  --color-board-notation-light: rgba(28, 46, 26, 0.55);
+  --color-board-notation-dark: rgba(255, 255, 255, 0.68);
+}
+
+html[data-board-theme='azul'] {
+  --color-board-light: #dbe7f3;
+  --color-board-dark: #4a6f96;
+  --color-board-notation-light: rgba(28, 44, 64, 0.55);
+  --color-board-notation-dark: rgba(255, 255, 255, 0.68);
+}
+
+html[data-board-theme='cinza'] {
+  --color-board-light: #d8d8d8;
+  --color-board-dark: #6f6f6f;
+  --color-board-notation-light: rgba(38, 38, 38, 0.55);
+  --color-board-notation-dark: rgba(255, 255, 255, 0.72);
+}
+
+html[data-board-theme='roxo'] {
+  --color-board-light: #e6dcf2;
+  --color-board-dark: #6b4f8a;
+  --color-board-notation-light: rgba(49, 36, 66, 0.55);
+  --color-board-notation-dark: rgba(255, 255, 255, 0.68);
+}
+
+html[data-board-theme='marrom'] {
+  --color-board-light: #d9c3a5;
+  --color-board-dark: #6b4a2f;
+  --color-board-notation-light: rgba(56, 36, 20, 0.55);
+  --color-board-notation-dark: rgba(255, 255, 255, 0.68);
+}

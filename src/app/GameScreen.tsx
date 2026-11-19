@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ChessBoard } from '@/components/board/ChessBoard';
+import { AppearancePanel } from '@/components/panels/AppearancePanel';
 import { PlayerCardWithPhase } from '@/components/panels/PlayerCard';
 import { MoveHistory } from '@/components/panels/MoveHistory';
 import { GameControls } from '@/components/panels/GameControls';
@@ -194,6 +195,9 @@ export function GameScreen() {
                   onPresetChange={handlePresetChange}
                 />
               </Card>
+
+              {/* Appearance */}
+              <AppearancePanel />
 
               {/* Game Status */}
               <Card className="p-4">

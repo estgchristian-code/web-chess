@@ -339,8 +339,8 @@ export function ChessBoard() {
             dropSquareStyle: {
               boxShadow: 'inset 0 0 0 3px rgba(74, 156, 110, 0.55)',
             },
-            lightSquareNotationStyle: { color: 'rgba(58, 40, 22, 0.55)' },
-            darkSquareNotationStyle: { color: 'rgba(255, 255, 255, 0.55)' },
+            lightSquareNotationStyle: { color: 'var(--color-board-notation-light)' },
+            darkSquareNotationStyle: { color: 'var(--color-board-notation-dark)' },
             alphaNotationStyle: { fontSize: '0.6875rem', fontWeight: 600 },
             numericNotationStyle: { fontSize: '0.6875rem', fontWeight: 600 },
             animationDurationInMs: 180,
